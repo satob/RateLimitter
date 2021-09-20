@@ -13,7 +13,7 @@ public class HelloController {
 
     @GetMapping("/")
     public String index() {
-        if (!limitter.allowAccess(new Access(request.getRemoteAddr(), System.currentTimeMillis()))) {
+        if (!limitter.allowAccess(request.getRemoteAddr(), System.currentTimeMillis())) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS);
         }
         // DO BUSINESS LOGIC

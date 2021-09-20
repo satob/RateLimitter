@@ -59,12 +59,13 @@ public class RateLimitter {
      * アクセスが許可されるか判定する。
      * @return アクセス可能な場合はtrue、アクセス不可の場合はfalse
      */
-    public synchronized boolean allowAccess(Access newAccess) {
+    public synchronized boolean allowAccess(String address, long accessTime) {
         /* 実装メモ：
          * 複数スレッドから同時に呼び出される可能性があるため、安全のためsynchronized指定している。
          * リクエスト処理完了までロックする実装ではなく、処理時間も短いため問題にはならないと考えているが、
          * 必要であればQueue・Map・SetをConcurrent処理に対応した実装に置き換えること。
          */
+        Access newAccess = new Access(address, accessTime);
         clearOldAccess(newAccess);
 
         Set<Access> targetAccesses = accessMap.get(newAccess.getAddress());
