@@ -1,5 +1,6 @@
 package com.example;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +17,7 @@ import java.util.Set;
  * アクセス不可の時間内もカウント対象に入れる場合、allowAccess()からaddAccess()を呼び出すタイミングを
  * 判定処理の前に持ってくること。
  */
-public class RateLimitter {
+public class RateLimitter implements Serializable {
     /** アクセスを追加順に保持するキュー */
     /* 実装メモ：
      * Java SE APIには、size()がO(1)で、peek()ができて、かつDequeでない単純なQueueの実装はない模様。
@@ -122,5 +123,45 @@ public class RateLimitter {
             }
             oldestAcceess = accessList.peek();
         }
+    }
+}
+
+
+/**
+ * アクセス1回分の情報を保持する。
+ * アクセス元アドレスは文字列で表現するため、用途に合わせて表現をFQDN/IPv4/IPv6どれかに固定すること。
+ * アクセス時刻はSystem.currentTimeMillis()の結果を想定している。
+ */
+class Access implements Serializable {
+    /** アクセス元アドレス */
+    private String address;
+    /** アクセス時刻（ミリ秒） */
+    private long accessTime;
+
+    /**
+     * コンストラクタ
+     * @param address アクセス元アドレス
+     * @param accessTime アクセス時刻（ミリ秒）
+     */
+    public Access(String address, long accessTime) {
+        super();
+        this.address = address;
+        this.accessTime = accessTime;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public long getAccessTime() {
+        return accessTime;
+    }
+
+    public void setAccessTime(long accessTime) {
+        this.accessTime = accessTime;
     }
 }
