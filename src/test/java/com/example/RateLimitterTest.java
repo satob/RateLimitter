@@ -2,6 +2,11 @@ package com.example;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 import org.junit.jupiter.api.Test;
 
 class RateLimitterTest {
@@ -52,7 +57,7 @@ class RateLimitterTest {
     }
 
     @Test
-    void oldAccessRemoveTest() {
+    void oldAccessRemoveTest() throws IOException {
         // タイムウィンドウが過ぎたアクセスは削除されること
         RateLimitter limitter = new RateLimitter();
         for(int i=0; i<10; i++) {
@@ -66,6 +71,7 @@ class RateLimitterTest {
         assertTrue(limitter.accessList.size() < 10);
         // メモリ消費を抑えるため、空になったSetも削除されること
         assertTrue(limitter.accessMap.get("127.0.0.2") == null);
+        assertTrue(getMemoryConsumption(limitter) < 500);
     }
 
     @Test
@@ -77,5 +83,18 @@ class RateLimitterTest {
         }
         assertFalse(limitter.allowAccess("127.0.0.1", System.currentTimeMillis()));
         assertTrue(limitter.allowAccess("127.0.0.1", System.currentTimeMillis() + 1000 + 1));
+    }
+
+
+    int getMemoryConsumption(Serializable obj) throws IOException {
+        try (
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(bos);
+                ) {
+            out.writeObject(obj);
+            out.flush();
+            byte[] bytes = bos.toByteArray();
+            return bytes.length;
+        }
     }
 }
