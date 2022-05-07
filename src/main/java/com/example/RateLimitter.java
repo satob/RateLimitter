@@ -69,7 +69,7 @@ public class RateLimitter implements Serializable {
         Access newAccess = new Access(address, accessTime);
         clearOldAccess(newAccess);
 
-        Set<Access> targetAccesses = accessMap.get(newAccess.getAddress());
+        Set<Access> targetAccesses = accessMap.get(newAccess.getKey());
         if (targetAccesses != null && targetAccesses.size() >= accessLimit) {
             return false;
         } else {
@@ -87,12 +87,12 @@ public class RateLimitter implements Serializable {
          * アクセス不可の時間内もカウント対象に入れたい場合の修正を容易にするため。
          */
         accessList.add(newAccess);
-        if (accessMap.get(newAccess.getAddress()) == null) {
+        if (accessMap.get(newAccess.getKey()) == null) {
             Set<Access> newSet = new HashSet<>();
             newSet.add(newAccess);
-            accessMap.put(newAccess.getAddress(), newSet);
+            accessMap.put(newAccess.getKey(), newSet);
         } else {
-            accessMap.get(newAccess.getAddress()).add(newAccess);
+            accessMap.get(newAccess.getKey()).add(newAccess);
         }
     }
 
@@ -117,9 +117,9 @@ public class RateLimitter implements Serializable {
              * Setが空になったらSet自体もMapから削除する。
              */
             accessList.poll();
-            accessMap.get(oldestAcceess.getAddress()).remove(oldestAcceess);
-            if (accessMap.get(oldestAcceess.getAddress()).isEmpty()) {
-                accessMap.remove(oldestAcceess.getAddress());
+            accessMap.get(oldestAcceess.getKey()).remove(oldestAcceess);
+            if (accessMap.get(oldestAcceess.getKey()).isEmpty()) {
+                accessMap.remove(oldestAcceess.getKey());
             }
             oldestAcceess = accessList.peek();
         }
@@ -133,35 +133,27 @@ public class RateLimitter implements Serializable {
  * アクセス時刻はSystem.currentTimeMillis()の結果を想定している。
  */
 class Access implements Serializable {
-    /** アクセス元アドレス */
-    private String address;
+    /** アクセスを識別するキー（アクセス元アドレス、アドレス＋ポート番号、ユーザIDなど） */
+    private final String key;
     /** アクセス時刻（ミリ秒） */
-    private long accessTime;
+    private final long accessTime;
 
     /**
      * コンストラクタ
-     * @param address アクセス元アドレス
+     * @param key アクセスを識別するキー（アクセス元アドレス、アドレス＋ポート番号、ユーザIDなど）
      * @param accessTime アクセス時刻（ミリ秒）
      */
-    public Access(String address, long accessTime) {
+    public Access(String key, long accessTime) {
         super();
-        this.address = address;
+        this.key = key;
         this.accessTime = accessTime;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
+    public String getKey() {
+        return key;
     }
 
     public long getAccessTime() {
         return accessTime;
-    }
-
-    public void setAccessTime(long accessTime) {
-        this.accessTime = accessTime;
     }
 }
